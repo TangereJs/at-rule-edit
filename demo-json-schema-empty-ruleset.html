@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <title>Conditions Demo</title>
+
+  <script src="../webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="../polymer/polymer.html">
+  <link rel="import" href="../layout/layout.html">
+  <link rel="import" href="at-rule-edit.html">
+  <link rel="import" href="../at-core-form/at-core-form.html">
+  <style>
+    .light-padding {
+      padding-left: 6px;
+      padding-right: 6px;
+      margin: 2px;
+      border: 1px solid #bbb;
+    }
+  </style>
+
+</head>
+
+<body>
+  <div class="vertical layout">
+    <div class="horizontal layout">
+      <h2>Conditions and Actions Demo - empty ruleset</h2>
+    </div>
+    <div class="horizontal layout">
+      <div class="flex-6 light-padding">
+        <at-core-form id="demoForm"></at-core-form>
+      </div>
+      <div class="flex-6 light-padding">
+        <at-rule-edit id="ruleEdit" defaultactions="false" defaultconditions="false"></at-rule-edit>
+      </div>
+    </div>
+    <div class="horizontal center-justified layout light-padding">
+      <button id="submit">Submit</button>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('WebComponentsReady', function () {
+      var schema = {
+        "properties": {
+          "id": {
+            "description": "The unique identifier for a product",
+            "type": "number"
+          },
+          "name": {
+            "type": "string",
+            "required": "true",
+            "xinputmode": "required"
+          },
+          "city": {
+            "type": "string",
+            "default": "Default city name"
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "activePera": {
+            "type": "boolean",
+            "description": "This is description for pera"
+          },
+          "dropdownDemo": {
+            "title": "Drop down demo",
+            "type": "string",
+            "xtype": "enum",
+            "xvaluelist": "XML,JSON",
+            "default": "XML"
+          },
+          "card": {
+            "title": "Card",
+            "type": "string",
+            "xtype": "lookup",
+            "xurl": "http://localhost:2014/Activity/adenin.GateKeeper.Content/card/"
+          }
+        },
+        "required": ["id", "city"]
+      };
+
+      // window.test = this.$;
+
+      // use window.test.ruleEdit.collectConditionsData() and window.test.ruleEdit.collectActionsData() to get changed values
+      var ruleEdit = document.getElementById('ruleEdit');
+      ruleEdit.schema = schema;
+
+      var demoForm = document.getElementById('demoForm');
+      demoForm.schema = schema;
+
+      initializeForm(demoForm);
+
+
+      function initializeForm() {
+
+        var submit = document.getElementById('submit');
+        submit.addEventListener('click', function (e) {
+          e.preventDefault();
+          var lConditions = ruleEdit.value.conditions;
+          var lActions = ruleEdit.value.actions;
+          var engine = new RuleEngine({
+            conditions: lConditions,
+            actions: lActions
+          });
+
+          // conditions adapter is pairs of "property + 'Field'": demoForm.data[property]
+          var conditionsAdapter = demoForm.data;
+          /*
+          var conditionsAdapter = {};
+          for (property in schema.properties) {
+            conditionsAdapter[property + 'Field'] = demoForm.data[property];
+          }
+          */
+          var actionsAdapter = {
+            alert: function (data) {
+              alert(data.find("message"));
+            },
+            updateField: function (data) {
+              //console.log("data", data);
+              var fieldId = data.find("fieldId");
+              //console.log("fieldId", fieldId);
+              var val = data.find("fieldId", "newValue");
+              fieldId = fieldId.replace('Field', '');
+              if (val === "true") {
+                val = true;
+              }
+              if (val === "false") {
+                val = false;
+              }
+              //demoForm.data[fieldId] = val;
+              demoForm.updateFormElementData(fieldId, val);
+            }
+          };
+          engine.run(conditionsAdapter, actionsAdapter);
+        });
+      }
+    });
+  </script>
+
+</body>
+
+</html>
