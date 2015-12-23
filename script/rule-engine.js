@@ -236,7 +236,7 @@ var global = this;
     var schemaExists = Boolean(this.element.schema);
     var rulesExist = Boolean(this.element.schema.rules);
     if (!schemaExists || !rulesExist) {
-      console.log('Element <b>' + this.element + '</b> does not have any rules to validate');
+      // console.log('Element <b>' + this.element + '</b> does not have any rules to validate');
       return;
     }
     var newValue = event.detail.value;
