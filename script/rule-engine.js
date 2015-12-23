@@ -42,7 +42,10 @@ var global = this;
     rule = rule || {};
     this.operators = {};
     this.actions = rule.actions || [];
-    this.conditions = rule.conditions || { kind: "all", conditions: []};
+    this.conditions = rule.conditions || {
+      kind: "all",
+      conditions: []
+    };
     this.addOperators(standardOperators);
   }
 
@@ -79,8 +82,8 @@ var global = this;
 
     addOperators: function(newOperators) {
       var _this = this;
-      for(var key in newOperators) {
-        if(newOperators.hasOwnProperty(key)) {
+      for (var key in newOperators) {
+        if (newOperators.hasOwnProperty(key)) {
           (function() {
             var op = newOperators[key];
             // synchronous style operator, needs to be wrapped
@@ -89,7 +92,7 @@ var global = this;
                 try {
                   var result = op(actual, target);
                   cb(null, result);
-                } catch(e) {
+                } catch (e) {
                   cb(e);
                 }
               };
@@ -97,8 +100,7 @@ var global = this;
             // asynchronous style, no wrapping needed
             else if (op.length == 3) {
               _this.operators[key] = op;
-            }
-            else {
+            } else {
               throw "Operators should have an arity of 2 or 3; " + key + " has " + op.length;
             }
           })();
@@ -107,18 +109,20 @@ var global = this;
     },
 
     runActions: function(actionsAdapter) {
-      for(var i=0; i < this.actions.length; i++) {
+      for (var i = 0; i < this.actions.length; i++) {
         var actionData = this.actions[i];
         var actionName = actionData.actionName;
         var actionFunction = actionsAdapter[actionName]
-        if(actionFunction) { actionFunction(actionData); }
+        if (actionFunction) {
+          actionFunction(actionData);
+        }
       }
     }
   };
 
   function handleNode(node, obj, engine, cb) {
     var kind = node.kind;
-    if(kind === "all" || kind === "any" || kind === "none") {
+    if (kind === "all" || kind === "any" || kind === "none") {
       handleConditionalNode(node, obj, engine, cb);
     } else {
       handleRuleNode(node, obj, engine, cb);
@@ -142,15 +146,14 @@ var global = this;
           i++;
           if (currentNode) {
             handleNode(currentNode, obj, engine, done);
-          }
-          else {
+          } else {
             // If we have gone through all of the nodes and gotten
             // here, either they have all been true (success for `all`)
             // or all false (failure for `any`);
             var r = isNone ? true : isAll;
             cb(null, r);
           }
-        } catch(e) {
+        } catch (e) {
           cb(e);
         }
       };
@@ -163,7 +166,7 @@ var global = this;
         next();
       }
       next();
-    } catch(e) {
+    } catch (e) {
       cb(e);
     }
   }
@@ -176,14 +179,13 @@ var global = this;
           return value(function(result) {
             compareValues(result, node.operator, node.value, engine, cb);
           });
-        }
-        else {
+        } else {
           value = value()
         }
       }
       var nodeValue = node.compareTo === "field" ? obj[node.value] : node.value;
       compareValues(value, node.operator, nodeValue, engine, cb);
-    } catch(e) {
+    } catch (e) {
       cb(e);
     }
   }
@@ -193,7 +195,7 @@ var global = this;
       var operatorFunction = engine.operator(operator);
       if (!operatorFunction) throw "Missing " + operator + " operator";
       operatorFunction(actual, value, cb);
-    } catch(e) {
+    } catch (e) {
       cb(e);
     }
   }
@@ -202,4 +204,90 @@ var global = this;
     module.exports = RuleEngine;
     delete global.RuleEngine;
   }
+
+  /**
+   * Created for AT-22
+   */
+  var DataValidator = global.DataValidator = function DataValidator() {
+    // last validated data is the JSON string of the last data that was validated using rules
+    this._lastValidatedData = '';
+  };
+
+  DataValidator.prototype.observeDataFor = function(element) {
+    if (!element) {
+      console.log('Can not observe data changes for <b>' + element + '</b> element');
+      return;
+    }
+    if (element.is === 'at-core-form') {
+      this.element = element;
+      element.addEventListener('data-changed', this.onElementDataChanged.bind(this));
+    } else if (element.is === 'at-form-complex') {
+      this.element = element;
+      element.addEventListener('value-changed', this.onElementDataChanged.bind(this));
+    } else if (element.is === 'at-form-array') {
+      this.element = element;
+      element.addEventListener('value-changed', this.onFormArrayValueChanged.bind(this));
+    }
+  };
+
+  // this is the handler for at-core-form.data-changed and at-form-complex.value-changed
+  DataValidator.prototype.onElementDataChanged = function(event) {
+    if (!this.element) { return; }
+    var schemaExists = Boolean(this.element.schema);
+    var rulesExist = Boolean(this.element.schema.rules);
+    if (!schemaExists || !rulesExist) {
+      console.log('Element <b>' + this.element + '</b> does not have any rules to validate');
+      return;
+    }
+    var newValue = event.detail.value;
+    var newValueJsonStr = JSON.stringify(newValue);
+    if (newValue !== this._lastValidatedData) {
+      this._lastValidatedData = newValueJsonStr;
+      // for at-core-form ruleset is in schema.rules
+      var rules = this.element.schema.rules;
+      // rules should be an array
+      var self = this;
+      rules.forEach(function(rule, index) {
+        var ruleEngine = new RuleEngine(rule.rule);
+        ruleEngine.run(newValue, self.coreFormActionsAdapter, undefined);
+      });
+    }
+  };
+
+  // this is the handler for at-form-array.value-changed
+  DataValidator.prototype.onFormArrayValueChanged = function(event) {
+    console.log('Not implemented yet.');
+
+  };
+
+  DataValidator.prototype.coreFormActionsAdapter = {
+    alert: function(data) {
+      alert(data.message);
+    },
+    updateField: function(data) {
+      var fieldId = data.fieldName;
+      var val = data.updateTo;
+
+      if (val === "true") {
+        val = true;
+      }
+      if (val === "false") {
+        val = false;
+      }
+      this.element.updateFormElementData(fieldId, val);
+    },
+    setFieldState: function(data) {
+      var fieldId = data.fieldName;
+      var val = data.state;
+      this.element.setElementState(fieldId, val, val);
+    },
+    copyFieldValue: function(data) {
+      var srcFieldId = data.fieldName;
+      var destFieldId = data.copyTo;
+
+      var srcValue = this.element.data[srcFieldId];
+      this.element.updateFormElementData(destFieldId, srcValue);
+    }
+  };
+
 })();
