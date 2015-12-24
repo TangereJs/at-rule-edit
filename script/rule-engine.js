@@ -232,7 +232,9 @@ var global = this;
 
   // this is the handler for at-core-form.data-changed and at-form-complex.value-changed
   DataValidator.prototype.onElementDataChanged = function(event) {
-    if (!this.element) { return; }
+    if (!this.element) {
+      return;
+    }
     var schemaExists = Boolean(this.element.schema);
     var rulesExist = Boolean(this.element.schema.rules);
     if (!schemaExists || !rulesExist) {
@@ -249,7 +251,7 @@ var global = this;
       var self = this;
       rules.forEach(function(rule, index) {
         var ruleEngine = new RuleEngine(rule.rule);
-        ruleEngine.run(newValue, self.coreFormActionsAdapter, undefined);
+        ruleEngine.run(newValue, self.coreFormActionsAdapter(self), undefined);
       });
     }
   };
@@ -260,33 +262,36 @@ var global = this;
 
   };
 
-  DataValidator.prototype.coreFormActionsAdapter = {
-    alert: function(data) {
-      alert(data.message);
-    },
-    updateField: function(data) {
-      var fieldId = data.fieldName;
-      var val = data.updateTo;
+  DataValidator.prototype.coreFormActionsAdapter = function(dataValidator) {
+    var self = dataValidator;
+    return {
+      alert: function(data) {
+        alert(data.message);
+      },
+      updateField: function(data) {
+        var fieldId = data.fieldName;
+        var val = data.updateTo;
 
-      if (val === "true") {
-        val = true;
-      }
-      if (val === "false") {
-        val = false;
-      }
-      this.element.updateFormElementData(fieldId, val);
-    },
-    setFieldState: function(data) {
-      var fieldId = data.fieldName;
-      var val = data.state;
-      this.element.setElementState(fieldId, val, val);
-    },
-    copyFieldValue: function(data) {
-      var srcFieldId = data.fieldName;
-      var destFieldId = data.copyTo;
+        if (val === "true") {
+          val = true;
+        }
+        if (val === "false") {
+          val = false;
+        }
+        self.element.updateFormElementData(fieldId, val);
+      },
+      setFieldState: function(data) {
+        var fieldId = data.fieldName;
+        var val = data.state;
+        self.element.setElementState(fieldId, val, true);
+      },
+      copyFieldValue: function(data) {
+        var srcFieldId = data.fieldName;
+        var destFieldId = data.copyTo;
 
-      var srcValue = this.element.data[srcFieldId];
-      this.element.updateFormElementData(destFieldId, srcValue);
+        var srcValue = self.element.data[srcFieldId];
+        self.element.updateFormElementData(destFieldId, srcValue);
+      }
     }
   };
 
