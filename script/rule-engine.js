@@ -230,6 +230,24 @@ var global = this;
     }
   };
 
+  DataValidator.prototype.validateComplexValue = function (complexValue, rules, element) {
+    var complexBusinessValue = {};
+    copyProperties(Object.keys(complexValue), complexValue, complexBusinessValue);
+
+    rules.forEach(function(rule, index) {
+      var ruleEngine = new RuleEngine(rule.rule);
+      ruleEngine.run(complexBusinessValue, self.complexActionsAdapter(self), undefined);
+    });
+
+    return complexBusinessValue;
+  };
+
+  function copyProperties(propertyNames, source, destination) {
+    propertyNames.forEach(function (property, index) {
+      destination[property] = source[property];
+    });
+  }
+
   // this is the handler for at-core-form.data-changed and at-form-complex.value-changed
   DataValidator.prototype.onElementDataChanged = function(event) {
     if (!this.element) {
@@ -259,8 +277,38 @@ var global = this;
   // this is the handler for at-form-array.value-changed
   DataValidator.prototype.onFormArrayValueChanged = function(event) {
     console.log('Not implemented yet.');
-
   };
+
+  DataValidator.prototype.complexActionsAdapter = function (element, complexValue) {
+      return {
+        alert: function(data) {
+          alert(data.message);
+        },
+        updateField: function(data) {
+          var fieldId = data.fieldName;
+          var val = data.updateTo;
+
+          if (val === "true") {
+            val = true;
+          }
+          if (val === "false") {
+            val = false;
+          }
+          complexValue[fieldId] = val;
+        },
+        setFieldState: function(data) {
+          var fieldId = data.fieldName;
+          var val = data.state;
+          element.setElementState(fieldId, val, true);
+        },
+        copyFieldValue: function(data) {
+          var srcFieldId = data.fieldName;
+          var destFieldId = data.copyTo;
+          complexValue[destFieldId] = complexValue[srcFieldId];
+          element.updateFormElementValue(destFieldId, complexValue[srcFieldId]);
+        }
+      };
+  }
 
   DataValidator.prototype.coreFormActionsAdapter = function(dataValidator) {
     var self = dataValidator;
@@ -278,7 +326,11 @@ var global = this;
         if (val === "false") {
           val = false;
         }
-        self.element.updateFormElementData(fieldId, val);
+        if (self.element.updateFormElementData) {
+          self.element.updateFormElementData(fieldId, val);
+        } else if (self.element.updateFormElementValue) {
+          self.element.updateFormElementValue(fieldId, val);
+        }
       },
       setFieldState: function(data) {
         var fieldId = data.fieldName;
@@ -288,9 +340,13 @@ var global = this;
       copyFieldValue: function(data) {
         var srcFieldId = data.fieldName;
         var destFieldId = data.copyTo;
-
-        var srcValue = self.element.data[srcFieldId];
-        self.element.updateFormElementData(destFieldId, srcValue);
+        if (self.element.data) {
+          var srcValue = self.element.data[srcFieldId];
+          self.element.updateFormElementData(destFieldId, srcValue);
+        } else if (self.element.value) {
+          var srcValue = self.element.value[srcFieldId];
+          self.element.updateFormElementValue(destFieldId, srcValue);
+        }
       }
     }
   };
