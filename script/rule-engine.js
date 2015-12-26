@@ -233,10 +233,11 @@ var global = this;
   DataValidator.prototype.validateComplexValue = function (complexValue, rules, element) {
     var complexBusinessValue = {};
     copyProperties(Object.keys(complexValue), complexValue, complexBusinessValue);
+    var self = this;
 
     rules.forEach(function(rule, index) {
       var ruleEngine = new RuleEngine(rule.rule);
-      ruleEngine.run(complexBusinessValue, self.complexActionsAdapter(self), undefined);
+      ruleEngine.run(complexBusinessValue, self.complexActionsAdapter(element, complexBusinessValue), undefined);
     });
 
     return complexBusinessValue;
