@@ -249,6 +249,62 @@ var global = this;
     });
   }
 
+  DataValidator.prototype.validateArrayValue = function (arrayValue, rules, element) {
+    var arrayBusinessValue = [];
+    var i;
+    var aLen = arrayValue.length;
+
+    for (i = 0; i < aLen; i++) {
+      var arrayItem = arrayValue[i];
+      var propertyNames = Object.keys(arrayItem);
+      var businessItem = {};
+      copyProperties(propertyNames, arrayItem, businessItem);
+      arrayBusinessValue.push(businessItem);
+    }
+    var j;
+    var rLen;
+    for (i=0; i < len; i++) {
+      businessItem = arrayBusinessValue[i];
+      for(j=0; j <rLen; j++) {
+        var rule = rules[j];
+        var ruleEngine = new RuleEngine(rule);
+        ruleEngine.run(businessItem, this.arrayActionsAdapter(element, businessItem), undefined);
+      }
+    }
+  }
+
+  DataValidator.prototype.arrayActionsAdapter = function (element, arrayItemValue, itemPosition) {
+
+    return {
+      alert: function(data) {
+        alert(data.message);
+      },
+      updateField: function(data) {
+        var fieldId = data.fieldName;
+        var val = data.updateTo;
+
+        if (val === "true") {
+          val = true;
+        }
+        if (val === "false") {
+          val = false;
+        }
+        arrayItemValue[fieldId] = val;
+      },
+      setFieldState: function(data) {
+        var fieldId = data.fieldName;
+        var state = data.state;
+        element._setItemPropertyState(itemPosition, fieldId, state, true);
+      },
+      copyFieldValue: function(data) {
+        var srcFieldId = data.fieldName;
+        var destFieldId = data.copyTo;
+        arrayItemValue[destFieldId] = arrayItemValue[srcFieldId];
+        element._updateItemValueEntry(itemPosition, destFieldId, arrayItemValue[srcFieldId]);
+      }
+    };
+  }
+
   // this is the handler for at-core-form.data-changed and at-form-complex.value-changed
   DataValidator.prototype.onElementDataChanged = function(event) {
     if (!this.element) {
