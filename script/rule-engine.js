@@ -262,15 +262,17 @@ var global = this;
       arrayBusinessValue.push(businessItem);
     }
     var j;
-    var rLen;
-    for (i=0; i < len; i++) {
+    var rLen = rules.length;
+    for (i=0; i < aLen; i++) {
       businessItem = arrayBusinessValue[i];
       for(j=0; j <rLen; j++) {
         var rule = rules[j];
-        var ruleEngine = new RuleEngine(rule);
-        ruleEngine.run(businessItem, this.arrayActionsAdapter(element, businessItem), undefined);
+        var ruleEngine = new RuleEngine(rule.rule);
+        ruleEngine.run(businessItem, this.arrayActionsAdapter(element, businessItem, i), undefined);
       }
     }
+
+    return arrayBusinessValue;
   }
 
   DataValidator.prototype.arrayActionsAdapter = function (element, arrayItemValue, itemPosition) {
@@ -290,6 +292,7 @@ var global = this;
           val = false;
         }
         arrayItemValue[fieldId] = val;
+        element.updateFormElementValue(itemPosition, fieldId, val);
       },
       setFieldState: function(data) {
         var fieldId = data.fieldName;
@@ -300,7 +303,8 @@ var global = this;
         var srcFieldId = data.fieldName;
         var destFieldId = data.copyTo;
         arrayItemValue[destFieldId] = arrayItemValue[srcFieldId];
-        element._updateItemValueEntry(itemPosition, destFieldId, arrayItemValue[srcFieldId]);
+        element.updateFormElementValue(itemPosition, destFieldId, arrayItemValue[srcFieldId]);
+        // element._updateItemValueEntry(itemPosition, destFieldId, arrayItemValue[srcFieldId]);
       }
     };
   }
