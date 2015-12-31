@@ -292,7 +292,6 @@ var global = this;
           val = false;
         }
         arrayItemValue[fieldId] = val;
-        element.updateFormElementValue(itemPosition, fieldId, val);
       },
       setFieldState: function(data) {
         var fieldId = data.fieldName;
@@ -303,8 +302,6 @@ var global = this;
         var srcFieldId = data.fieldName;
         var destFieldId = data.copyTo;
         arrayItemValue[destFieldId] = arrayItemValue[srcFieldId];
-        element.updateFormElementValue(itemPosition, destFieldId, arrayItemValue[srcFieldId]);
-        // element._updateItemValueEntry(itemPosition, destFieldId, arrayItemValue[srcFieldId]);
       }
     };
   }
