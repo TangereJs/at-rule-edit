@@ -393,7 +393,17 @@ var global = this;
       setFieldState: function(data) {
         var fieldId = data.fieldName;
         var val = data.state;
-        self.element.setElementState(fieldId, val, true);
+        if (val === "disabled") {
+          self.element.setElementState(fieldId, val, true);
+        } else if (val === "required") {
+          self.element.setElementState(fieldId, val, true);
+        } else if (val === "optional") {
+          self.element.setElementState(fieldId, "required", false);
+          self.element.setElementState(fieldId, "disabled", false);
+          self.element.setElementState(fieldId, "hide", false);
+        } else if (val === "hidden") {
+          self.element.setElementState(fieldId, "hide", true);
+        }
       },
       copyFieldValue: function(data) {
         var srcFieldId = data.fieldName;
