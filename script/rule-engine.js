@@ -317,6 +317,11 @@ var global = this;
       // console.log('Element <b>' + this.element + '</b> does not have any rules to validate');
       return;
     }
+
+    if (!this.actionsAdapter) {
+      this.actionsAdapter = this.coreFormActionsAdapter(this);
+    }
+
     var newValue = event.detail.value;
     var newValueJsonStr = JSON.stringify(newValue);
     if (newValue !== this._lastValidatedData) {
@@ -327,7 +332,8 @@ var global = this;
       var self = this;
       rules.forEach(function(rule, index) {
         var ruleEngine = new RuleEngine(rule.rule);
-        ruleEngine.run(newValue, self.coreFormActionsAdapter(self), undefined);
+        var actionsAdapter = self.actionsAdapter;
+        ruleEngine.run(newValue, actionsAdapter, actionsAdapter.onNoTriggerOrError.bind(actionsAdapter));
       });
     }
   };
@@ -370,7 +376,33 @@ var global = this;
 
   DataValidator.prototype.coreFormActionsAdapter = function(dataValidator) {
     var self = dataValidator;
+    var coreForm = self.element;
+    var previousStates = {};
+
     return {
+      onNoTriggerOrError: function(error, result) {
+        if (error || !result) {
+          // revert the changes
+          var fieldIds = Object.keys(previousStates);
+          fieldIds.forEach(function(fieldId, index){
+            var field = coreForm.getElement(fieldId);
+            var previousState = previousStates[fieldId];
+            var originalState = previousState.originalState;
+            if (originalState === "disabled") {
+              if (field.required) { field.required = false; }
+              if (field.hide) { field.hide = false; }
+            } else if (originalState === "required") {
+              if (field.disabled) { field.disabled = false; }
+              if (field.hide) { field.hide = false; }
+            } else if (originalState === "hide") {
+              if (field.disabled) { field.disabled = false; }
+              if (field.required) { field.required = false; }
+            }
+            // field[previousState.changedState] = false;
+            field[previousState.originalState] = true;
+          });
+        }
+      },
       alert: function(data) {
         alert(data.message);
       },
@@ -393,16 +425,49 @@ var global = this;
       setFieldState: function(data) {
         var fieldId = data.fieldName;
         var val = data.state;
+
+        var field =  self.element.getElement(fieldId);
+
+        var previousState = undefined;
+        if(previousStates[fieldId] === undefined) {
+          previousState = {
+            originalState: '',
+            changedState: ''
+          };
+          previousStates[fieldId] = previousState;
+        } else {
+          previousState = {
+            originalState: '',
+            changedState: ''
+          };
+        }
+
+        // set the name of the changedState
+        previousState.changedState = val;
+        if (val === 'hidden') {
+          previousState.changedState = 'hide';
+        }
+
+        if (field.disabled) {
+          // previous state was disabled
+          previousState.originalState = 'disabled';
+        } else if (field.required) {
+          // previous state was required
+          previousState.originalState = 'required';
+        } else if (field.hide) {
+          // previous state was hide
+          previousState.originalState = 'hide'
+        }
+
+        field[previousState.originalState] = false;
         if (val === "disabled") {
-          self.element.setElementState(fieldId, val, true);
+          field.disabled = true;
         } else if (val === "required") {
-          self.element.setElementState(fieldId, val, true);
+          field.required = true;
         } else if (val === "optional") {
-          self.element.setElementState(fieldId, "required", false);
-          self.element.setElementState(fieldId, "disabled", false);
-          self.element.setElementState(fieldId, "hide", false);
+          field[previousState.originalState] = false;
         } else if (val === "hidden") {
-          self.element.setElementState(fieldId, "hide", true);
+          field.hide = true;
         }
       },
       copyFieldValue: function(data) {
