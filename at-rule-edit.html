@@ -1,6 +1,6 @@
+<link rel="import" href="../at-rule-engine/at-rule-engine.html">
 <link rel="import" href="../at-rule-conditions/at-rule-conditions.html">
 <link rel="import" href="../at-rule-actions/at-rule-actions.html">
-<script src="script/rule-engine.js" type="text/javascript"></script>
 
 <dom-module id="at-rule-edit">
   <template>
@@ -120,6 +120,14 @@
 
           var srcValue = coreForm.data[srcFieldId];
           coreForm.updateFormElementData(destFieldId, srcValue);
+        },
+        setFieldError: function (data) {
+          var fieldId = data.fieldName;
+          var errorMessage = data.errorMessage;
+          var field = coreForm.getElement(fieldId);
+          if (field && field.errorMessage !== undefined) {
+            field.errorMessage = errorMessage;
+          }
         }
       };
       if (customActionsAdapter) {
