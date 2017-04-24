@@ -4,9 +4,15 @@
 <link rel="import" href="../at-rule-actions/at-rule-actions.html">
 
 <dom-module id="at-rule-edit">
+  <style>
+    :host { 
+      display: block;
+      box-sizing: border-box;
+    }
+  </style>
   <template>
-    <at-rule-conditions id="conditions"></at-rule-conditions>
-    <at-rule-actions id="actions"></at-rule-actions>
+    <at-rule-conditions id="conditions" disabled="[[disabled]]"></at-rule-conditions>
+    <at-rule-actions id="actions" disabled="[[disabled]]"></at-rule-actions>
   </template>
 </dom-module>
 
@@ -15,13 +21,41 @@
   Polymer({
     is: 'at-rule-edit',
     properties: {
+
+      /**
+       * When true disables the rule editing
+       * 
+       * @property disabled
+       * @type Boolean
+       * @default false
+       */
+      disabled: {
+        type: Boolean,
+        value: false
+      },
+
+      /**
+       * Schema is an object of standard at-schema structure
+       * 
+       * @property schema
+       * @type Object
+       * @default {}
+       */
       schema: {
         type: Object,
         value: function () {
           return {};
-        },
-        observer: 'schemaChanged'
+        }
       },
+
+      /**
+       * Rule config is an object with conditions array (with conditions definitions) and 
+       * actions object (with actions definitions)
+       *
+       * @property ruleConfig
+       * @type Object
+       * @default { conditions: [], actions: {} }
+       */
       ruleConfig: {
         type: Object,
         value: function() {
@@ -29,9 +63,16 @@
             conditions: [],
             actions: {}
           };
-        },
-        observer: 'ruleConfigChanged'
+        }
       },
+
+      /**
+       * Value for conditions and actions
+       * 
+       * @property value
+       * @type Object
+       * @default { conditions: { kind: "all", conditions:[] }, actions: [] }
+       */
       value: {
         type: Object,
         value: function() {
@@ -43,43 +84,61 @@
             actions: []
           };
         },
-        observer: 'valueChanged'
-      },
-      disabled: {
-        type: Boolean,
-        value: false,
-        observer: 'disabledChanged'
+        observer: '_valueChanged'
       }
+
     },
-    _scopeCssViaAttr: true,
+
+    observers: [ '_updateConfigOrSchema(ruleConfig, schema)'],
+
     ready: function() {
       var self = this;
+
       this.$.conditions.addEventListener('value-changed', function(event) {
         event.stopPropagation();
         self.value.conditions = self.$.conditions.value;
-        self.fire('value-changed', { value: self.value });
+        self.fire('value-changed', { value: self.value }, { bubbles: false });  
       });
+
       this.$.actions.addEventListener('value-changed', function(event) {
         event.stopPropagation();
         self.value.actions = self.$.actions.value;
-        self.fire('value-changed', { value: self.value });
+        self.fire('value-changed', { value: self.value }, { bubbles: false });
       });
     },
-    schemaChanged: function(newValue, oldValue) {
-      this.$.conditions.schema = newValue;
-      this.$.actions.schema = newValue;
+
+    _updateConfigOrSchema: function (ruleConfig, schema) {
+      var ruleConfigEmpty = this._isConfigEmpty(ruleConfig);
+      var schemaEmpty = this._isSchemaEmpty(schema);
+
+      if (!ruleConfigEmpty && schemaEmpty) {
+        this.$.conditions.config = newValue.conditions;
+        this.$.actions.config = newValue.actions;        
+      } else {
+        this.$.conditions.schema = schema;
+        this.$.actions.schema = schema;
+      }
     },
-    ruleConfigChanged: function(newValue, oldValue) {
-      this.$.conditions.config = newValue.conditions;
-      this.$.actions.config = newValue.actions;
-    },
-    valueChanged: function(newValue, oldValue) {
+
+    _valueChanged: function(newValue, oldValue) {
       this.$.conditions.value = newValue.conditions;
       this.$.actions.value = newValue.actions;
     },
-    disabledChanged: function(newValue, oldValue) {
-      this.$.conditions.disabled = newValue;
-      this.$.actions.disabled = newValue;
+
+    _isSchemaEmpty: function(obj) {
+      return obj && obj.hasOwnProperty('properties') && !Object.keys(obj.properties).length;
+    },
+
+    _isConfigEmpty: function(obj) {
+      if (!obj) {
+        return false;
+      }
+
+      if (obj.conditions && !obj.conditions.length) {
+        return false;
+      }
+
+      return obj.actions && !Object.keys(obj.actions).length;
     },
 
     // *ij* #638 upgrades
