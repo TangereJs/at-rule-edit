@@ -112,8 +112,8 @@
       var schemaEmpty = this._isSchemaEmpty(schema);
 
       if (!ruleConfigEmpty && schemaEmpty) {
-        this.$.conditions.config = newValue.conditions;
-        this.$.actions.config = newValue.actions;        
+        this.$.conditions.config = ruleConfig.conditions;
+        this.$.actions.config = ruleConfig.actions;
       } else {
         this.$.conditions.schema = schema;
         this.$.actions.schema = schema;
@@ -126,7 +126,11 @@
     },
 
     _isSchemaEmpty: function(obj) {
-      return obj && obj.hasOwnProperty('properties') && !Object.keys(obj.properties).length;
+      var result = obj && !obj.hasOwnProperty('properties');
+      if (!result) {
+        result = result || Object.keys(obj.properties).length;
+      }
+      return result;
     },
 
     _isConfigEmpty: function(obj) {
