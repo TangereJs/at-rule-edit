@@ -128,21 +128,17 @@
     _isSchemaEmpty: function(obj) {
       var result = obj && !obj.hasOwnProperty('properties');
       if (!result) {
-        result = result || Object.keys(obj.properties).length;
+        result = result || !Object.keys(obj.properties).length;
       }
       return result;
     },
 
     _isConfigEmpty: function(obj) {
-      if (!obj) {
-        return false;
+      if (!obj || !obj.conditions || !obj.actions) {
+        return true;
       }
-
-      if (obj.conditions && !obj.conditions.length) {
-        return false;
-      }
-
-      return obj.actions && !Object.keys(obj.actions).length;
+      
+      return !obj.conditions.length && !Object.keys(obj.actions).length;
     },
 
     // *ij* #638 upgrades
