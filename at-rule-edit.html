@@ -107,7 +107,41 @@
       });
     },
 
-    _updateConfigOrSchema: function (ruleConfig, schema) {
+    _updateConfigOrSchema: function (newRuleConfig, newSchema) {
+      function isString(obj) {
+        return Object.prototype.toString.apply(obj) === "[object String]";
+      }
+      var ruleConfig;
+      var schema;
+
+      if (this._handlingInProgress) { return; }
+
+      if (isString(newRuleConfig)) {
+        try {
+          ruleConfig = JSON.parse(newRuleConfig);
+          this._handlingInProgress = true;
+          this.ruleConfig = ruleConfig;
+          this._handlingInProgress = false;
+        } catch (e) {
+          console.log(e);
+        }
+      } else {
+        ruleConfig = newRuleConfig;
+      }
+
+      if (isString(newSchema)) {
+        try {
+          schema = JSON.parse(newSchema);
+          this._handlingInProgress = true;
+          this.schema = schema;
+          this._handlingInProgress = false;
+        } catch (e) {
+          console.log(e);
+        }
+      } else {
+        schema = newSchema;
+      }
+ 
       var ruleConfigEmpty = this._isConfigEmpty(ruleConfig);
       var schemaEmpty = this._isSchemaEmpty(schema);
 
