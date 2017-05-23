@@ -44,7 +44,9 @@
       schema: {
         type: Object,
         value: function () {
-          return {};
+          return {
+            properties: {}
+          };
         }
       },
 
@@ -96,72 +98,237 @@
 
       this.$.conditions.addEventListener('value-changed', function(event) {
         event.stopPropagation();
+        self._isValueChangedInProgress = true;
         self.value.conditions = self.$.conditions.value;
+        self._isValueChangedInProgress = false;
         self.fire('value-changed', { value: self.value }, { bubbles: false });  
       });
 
       this.$.actions.addEventListener('value-changed', function(event) {
         event.stopPropagation();
+        self._isValueChangedInProgress = true;
         self.value.actions = self.$.actions.value;
+        self._isValueChangedInProgress = false;
         self.fire('value-changed', { value: self.value }, { bubbles: false });
       });
     },
 
     _updateConfigOrSchema: function (newRuleConfig, newSchema) {
+      
+      if (this._handlingInProgress) { return; }
+      
       function isString(obj) {
         return Object.prototype.toString.apply(obj) === "[object String]";
       }
-      var ruleConfig;
-      var schema;
 
-      if (this._handlingInProgress) { return; }
-
-      if (isString(newRuleConfig)) {
+      // if newRuleConfig is a string and a non-empty string
+      if (isString(newRuleConfig) && newRuleConfig !== "") {
         try {
-          ruleConfig = JSON.parse(newRuleConfig);
+          // parse it and use that as ruleConfig
+          var parsedConfigValue = JSON.parse(newRuleConfig);
           this._handlingInProgress = true;
-          this.ruleConfig = ruleConfig;
+          this.ruleConfig = parsedConfigValue;
           this._handlingInProgress = false;
         } catch (e) {
-          console.log(e);
+          // if string is not a valid json string
+          // use initial value since oldValue is not available in complex observers
+          this._handlingInProgress = true;
+          this.ruleConfig = this.properties.ruleConfig.value();
+          this._handlingInProgress = false;
         }
-      } else {
-        ruleConfig = newRuleConfig;
       }
 
-      if (isString(newSchema)) {
+      // if newSchema is a string and a non-empty string
+      if (isString(newSchema) && newSchema !== "") {
         try {
-          schema = JSON.parse(newSchema);
+          // parse it and use that as schema
+          var parsedSchemaValue = JSON.parse(newSchema);
           this._handlingInProgress = true;
-          this.schema = schema;
+          this.schema = parsedSchemaValue;
           this._handlingInProgress = false;
         } catch (e) {
-          console.log(e);
+          // if string is not a valid json string
+          // use initial value since oldValue is not available in complex observers
+          this._handlingInProgress = true;
+          this.schema = this.properties.schema.value();
+          this._handlingInProgress = false;
         }
-      } else {
-        schema = newSchema;
       }
+
+      function isObject(obj) {
+        return Object.prototype.toString.apply(obj) === "[object Object]";
+      }
+
+      function checkRuleConfigValid(param) {
+        // ruleConfig {
+        //   conditions: [],
+        //   actions: {}
+        // }
+        
+        // ruleConfig must be an object
+        if (!isObject(param)) { return false; }
+
+        // ruleConfig must have conditions and actions properties
+        if (!param.hasOwnProperty('conditions') || 
+            !param.hasOwnProperty('actions')) { 
+          return false; 
+        }
+
+        function isArray(obj) {
+          return Object.prototype.toString.apply(obj) === "[object Array]";
+        }
+        // conditions must be an array
+        if (!isArray(param.conditions)) { return false; }
+        // actions must be an object
+        if (!isObject(param.actions)) { return false; }
+
+        return true;
+      }
+
+      var isRuleConfigValid = checkRuleConfigValid(this.ruleConfig);
+
+      function checkSchemaValid(param) {
+        // schema {
+        //   properties: {}
+        // }
+        // schema must be an object
+        if (!isObject(param)) { return false; }
+        // schema must have properties property
+        if (!param.hasOwnProperty('properties')) { return false; }
+        // properties property must be an object
+        if (!isObject(param.properties)) { return false; }
+
+        return true;
+      }
+
+      var isSchemaValid = checkSchemaValid(this.schema);
  
-      var ruleConfigEmpty = this._isConfigEmpty(ruleConfig);
-      var schemaEmpty = this._isSchemaEmpty(schema);
-
-      if (!ruleConfigEmpty && schemaEmpty) {
-        this.$.conditions.config = ruleConfig.conditions;
-        this.$.actions.config = ruleConfig.actions;
+      if (isSchemaValid && !this._isSchemaEmpty(this.schema)) {
+        // use schema
+        this.$.conditions.schema = this.schema;
+        this.$.actions.schema = this.schema;        
+      } else if (isRuleConfigValid && !this._isConfigEmpty(this.ruleConfig)) {
+        // use ruleConfig
+        this.$.conditions.config = this.ruleConfig.conditions;
+        this.$.actions.config = this.ruleConfig.actions;
       } else {
-        this.$.conditions.schema = schema;
-        this.$.actions.schema = schema;
+        // use initial value for schema (or ruleConfig it doesn't matter)
+        var initialConfig = this.properties.ruleConfig.value();
+        this.$.conditions.config = initialConfig.conditions;
+        this.$.actions.config = initialConfig.actions;
       }
     },
 
     _valueChanged: function(newValue, oldValue) {
+
+      function isString(obj) {
+        return Object.prototype.toString.apply(obj) === "[object String]";
+      }
+
+      if (this._isValueChangedInProgress) { return; }
+
+      if (isString(newValue) && newValue !== "") {
+        // if newValue is a string and a non-empty string
+        // try to parse it and use that as value
+        try {
+          var parsedValue = JSON.parse(newValue);
+          this._isValueChangedInProgress = true;
+          this.value = parsedValue;
+          this._isValueChangedInProgress = false;
+        } catch (e) {
+          // newValue is invalid json string
+          // use oldValue instead
+          this._isValueChangedInProgress = true;
+          this.value = oldValue;
+          this._isValueChangedInProgress = false;
+        }
+        return;
+      }
+      // else newValue is empty string and isRuleEditValueValid should return false;
+
+      function isRuleEditValueValid(param) {
+
+        // value = {
+        //   conditions: {
+        //     kind: "all",
+        //     conditions: []
+        //   },
+        //   actions: []
+        // }
+
+        function isObject(obj) {
+          return Object.prototype.toString.apply(obj) === "[object Object]";
+        }
+
+        // param must be an object 
+        if (!isObject(param)) { return false; }
+
+        // param must have conditions and actions properties
+        if (!param.hasOwnProperty('conditions') || !param.hasOwnProperty('actions')) { return false; }
+
+        function isArray(obj) {
+          return Object.prototype.toString.apply(obj) === "[object Array]";
+        }
+
+        // conditions must be an object
+        if (!isObject(param.conditions)) { return false; }
+
+        // conditions must have kind and conditions properties
+        if (!param.conditions.hasOwnProperty('kind') || 
+            !param.conditions.hasOwnProperty('conditions')) { return false; }
+
+        function isString(obj) {
+          return Object.prototype.toString.apply(obj) === "[object String]";
+        }
+
+        // kind property must be a string
+        if (!isString(param.conditions.kind)) { return false; }
+
+        // conditions property must be an array
+        if (!isArray(param.conditions.conditions)) { return false; }
+
+        // actions must be an array
+        if (!isArray(param.actions)) { return false; }
+
+        return true;
+      }
+      
+      var isNewValueValid = isRuleEditValueValid(newValue);
+      var isOldValueValid = isRuleEditValueValid(oldValue);
+
+      function getInitialValue(propertyDefinition) {
+        function isFunction(obj) {
+          return Object.prototype.toString.apply(obj) === "[object isFunction]";
+        }
+
+        if (isFunction(propertyDefinition.value)) {
+          return propertyDefinition.value();
+        } else {
+          return propertyDefinition.value;
+        }
+      }
+
+      // if newValue is invalid and oldValue is invalid use initial value
+      if (!isNewValueValid && !isOldValueValid) {
+        var initialValue = getInitialValue(this.properties.value);
+        this.$.conditions.value = initialValue.conditions;
+        this.$.actions.value = initialValue.actions;
+        return;
+      }
+
+      // if newValue is invalid but oldValue is valid do nothing
+      // because we want to keep the oldValue
+      if (!isNewValueValid && isOldValueValid) {
+        return;
+      }
+
       this.$.conditions.value = newValue.conditions;
       this.$.actions.value = newValue.actions;
     },
 
     _isSchemaEmpty: function(obj) {
       var result = obj && !obj.hasOwnProperty('properties');
-      if (!result) {
+      if (result) {
         result = result || !Object.keys(obj.properties).length;
       }
       return result;
