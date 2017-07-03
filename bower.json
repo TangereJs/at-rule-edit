@@ -7,7 +7,7 @@
     "at-rule-conditions": "TangereJs/at-rule-conditions#master",
     "at-rule-actions": "TangereJs/at-rule-actions#master",
     "at-core-form": "TangereJs/at-core-form#master",
-    "layout": "Polymer/layout#master"
+    "layout": "TangereJs/layout#master"
   },
   "version": "0.0.1.84"
 }
