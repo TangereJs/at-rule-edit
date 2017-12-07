@@ -1,0 +1,186 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8"/>
+    <title>at-rule-edit tests</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+    <link rel="import" href="../at-rule-edit.html"/>
+    <link rel="import" href="../../iron-test-helpers/iron-test-helpers.html"/>
+  </head>
+  <body>
+
+    <test-fixture id="initial">
+      <template>
+        <at-rule-edit></at-rule-edit>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="disabledIsUndefined">
+      <template>
+        <at-rule-edit disabled="undefined"></at-rule-edit>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="disabledIsNull">
+      <template>
+        <at-rule-edit disabled="null"></at-rule-edit>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="schemaIsUndefined">
+      <template>
+        <at-rule-edit schema="undefined"></at-rule-edit>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="schemaIsNull">
+      <template>
+        <at-rule-edit schema="null"></at-rule-edit>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="schemaIs{}">
+      <template>
+        <at-rule-edit schema="{}"></at-rule-edit>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="ruleConfigIsUndefined">
+      <template>
+        <at-rule-edit rule-config="undefined"></at-rule-edit>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="ruleConfigIsNull">
+      <template>
+        <at-rule-edit rule-config="null"></at-rule-edit>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="ruleConfigIs{}">
+      <template>
+        <at-rule-edit rule-config="{}"></at-rule-edit>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="valueIsUndefined">
+      <template>
+        <at-rule-edit value="undefined"></at-rule-edit>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="valueIsNull">
+      <template>
+        <at-rule-edit value="null"></at-rule-edit>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="valueIs{}">
+      <template>
+        <at-rule-edit value="{}"></at-rule-edit>
+      </template>
+    </test-fixture>
+
+    <script>
+      var intSchema = {
+        properties: {}
+      };
+
+      var intRuleConfig = {
+        conditions: [],
+        actions: {}
+      };
+      
+      var intValue = {
+        conditions: {
+          kind: "all",
+          conditions: []
+        },
+        actions: []
+      }
+
+      suite('initial', function() {
+        test('initial', function() {
+          var elt = fixture("initial");
+          assert.equal(elt.disabled, false);
+          assert.deepEqual(elt.schema, intSchema);
+          assert.deepEqual(elt.ruleConfig, intRuleConfig);
+          assert.deepEqual(elt.value, intValue);
+        });
+      });
+
+      suite('disabled tests', function() {
+        test('disabled is undefined', function() {
+          var elt = fixture("disabledIsUndefined");
+          assert.equal(elt.disabled, true);
+          assert.deepEqual(elt.schema, intSchema);
+          assert.deepEqual(elt.ruleConfig, intRuleConfig);
+          assert.deepEqual(elt.value, intValue);
+        });
+
+        test('disabled is null', function() {
+          var elt = fixture("disabledIsNull");
+          assert.equal(elt.disabled, true);
+          assert.deepEqual(elt.schema, intSchema);
+          assert.deepEqual(elt.ruleConfig, intRuleConfig);
+          assert.deepEqual(elt.value, intValue);
+        });
+      });
+
+      suite('schema tests', function() {
+        test('schema is undefined', function() {
+          var elt = fixture("schemaIsUndefined");
+          assert.equal(elt.disabled, false);
+          assert.deepEqual(elt.schema, intSchema);
+          assert.deepEqual(elt.ruleConfig, intRuleConfig);
+          assert.deepEqual(elt.value, intValue);
+        });
+
+        test('schema is null', function() {
+          var elt = fixture("schemaIsNull");
+          assert.equal(elt.disabled, false);
+          assert.deepEqual(elt.schema, null);
+          assert.deepEqual(elt.ruleConfig, intRuleConfig);
+          assert.deepEqual(elt.value, intValue);
+        });
+
+        test('schema is {}', function() {
+          var elt = fixture("schemaIs{}");
+          assert.equal(elt.disabled, false);
+          assert.deepEqual(elt.schema, {});
+          assert.deepEqual(elt.ruleConfig, intRuleConfig);
+          assert.deepEqual(elt.value, intValue);
+        });
+      });
+      
+      suite('ruleConfig tests', function() {
+        test('ruleConfig is undefined', function() {
+          var elt = fixture("ruleConfigIsUndefined");
+          assert.equal(elt.disabled, false);
+          assert.deepEqual(elt.schema, intSchema);
+          assert.deepEqual(elt.ruleConfig, intRuleConfig);
+          assert.deepEqual(elt.value, intValue);
+        });
+
+        test('ruleConfig is null', function() {
+          var elt = fixture("ruleConfigIsNull");
+          assert.equal(elt.disabled, false);
+          assert.deepEqual(elt.schema, intSchema);
+          assert.deepEqual(elt.ruleConfig, null);
+          assert.deepEqual(elt.value, intValue);
+        });
+
+        test('ruleConfig is {}', function() {
+          var elt = fixture("ruleConfigIs{}");
+          assert.equal(elt.disabled, false);
+          assert.deepEqual(elt.schema, intSchema);
+          assert.deepEqual(elt.ruleConfig, {});
+          assert.deepEqual(elt.value, intValue);
+        });
+      });
+    </script>
+
+  </body>
+</html>

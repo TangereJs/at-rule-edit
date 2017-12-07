@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8"/>
+    <title>at-rule-edit tests</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+    <link rel="import" href="../at-rule-edit.html"/>
+    <link rel="import" href="../../iron-test-helpers/iron-test-helpers.html"/>
+  </head>
+  <body>
+
+    <test-fixture id="propertyTests">
+      <template>
+        <at-rule-edit></at-rule-edit>
+      </template>
+    </test-fixture>
+
+    <script>
+
+      function getComputedPropertyValue(elt, propName) {
+        var compStyle = window.getComputedStyle(elt);
+        var propValue = compStyle.getPropertyValue(propName);
+        return propValue;
+      }
+
+      suite('disabled tests', function() {
+        test('disabled true disables rule and action editing', function() {
+          var elt = fixture('propertyTests');
+
+          var conds = elt.$.conditions;
+          var acts = elt.$.actions;
+
+          assert.equal(conds.disabled, false);
+          assert.equal(acts.disabled, false); 
+
+          elt.disabled = true;
+
+          assert.equal(conds.disabled, true);
+          assert.equal(acts.disabled, true); 
+
+        });
+      });
+
+      suite('schema tests', function() {
+        
+      });
+
+    </script>
+
+  </body>
+</html>
