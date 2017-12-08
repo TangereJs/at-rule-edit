@@ -45,6 +45,65 @@
 
       suite('schema tests', function() {
         
+        var intSchema = { properties: {} };
+
+        var schemaStr = '{ "properties": {} }';
+
+        var schemaStr2 = '{ "properties": { "elt1": { "type": "string" }, "elt2": { "type": "string" } } }';
+
+        var schema2Obj = {
+          properties: {
+            elt1: {
+              type: "string"
+            },
+            elt2: {
+              type: "string"
+            }
+          }
+        };
+
+        test('set schema to empty string', function() {
+          var elt = fixture('propertyTests');
+          assert.deepEqual(elt.schema, intSchema);
+
+          elt.scheam = "";
+          assert.deepEqual(elt.schema, intSchema);
+
+          assert.deepEqual(elt.$.conditions.schema, intSchema);
+          assert.deepEqual(elt.$.actions.schema, intSchema);
+        });
+
+        test('set schema to initial value string', function() {
+          var elt = fixture('propertyTests');
+          assert.deepEqual(elt.schema, intSchema);
+
+          elt.schema = schemaStr;
+          assert.deepEqual(elt.schema, intSchema);
+
+          assert.deepEqual(elt.$.conditions.schema, intSchema);
+          assert.deepEqual(elt.$.actions.schema, intSchema);
+        });
+
+        test('set schema to non empty schema string', function() {
+          var elt = fixture('propertyTests');
+          assert.deepEqual(elt.schema, intSchema);
+
+          elt.schema = schemaStr2;
+          assert.deepEqual(elt.schema, schema2Obj);
+
+          assert.deepEqual(elt.$.conditions.schema, schema2Obj);
+          assert.deepEqual(elt.$.actions.schema, schema2Obj);
+        });
+
+
+        // set empty string; expResult scheam === initial value
+
+        // set string as to initial value { properties: {} }; expResult scheam === initial value
+
+        // set string as to a non empty value { properties: { el1: {}, el2: {} } }; expResult scheam === set value
+
+
+
       });
 
     </script>
