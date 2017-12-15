@@ -66,8 +66,8 @@
           var elt = fixture('propertyTests');
           assert.deepEqual(elt.schema, intSchema);
 
-          elt.scheam = "";
-          assert.deepEqual(elt.schema, intSchema);
+          elt.schema = "";
+          assert.deepEqual(elt.schema, "");
 
           assert.deepEqual(elt.$.conditions.schema, intSchema);
           assert.deepEqual(elt.$.actions.schema, intSchema);
@@ -95,14 +95,146 @@
           assert.deepEqual(elt.$.actions.schema, schema2Obj);
         });
 
+        test('set schema to empty object', function() {
+          var elt = fixture('propertyTests');
+          assert.deepEqual(elt.schema, intSchema);
 
-        // set empty string; expResult scheam === initial value
+          elt.schema = {};
+          assert.deepEqual(elt.schema, {});
 
-        // set string as to initial value { properties: {} }; expResult scheam === initial value
+          assert.deepEqual(elt.$.conditions.schema, intSchema);
+          assert.deepEqual(elt.$.actions.schema, intSchema);
+        });
 
-        // set string as to a non empty value { properties: { el1: {}, el2: {} } }; expResult scheam === set value
+        test('set schema to object with empty properties', function() {
+          var elt = fixture('propertyTests');
+          assert.deepEqual(elt.schema, intSchema);
 
+          elt.schema = { properties: {} };
+          assert.deepEqual(elt.schema, intSchema);
 
+          assert.deepEqual(elt.$.conditions.schema, intSchema);
+          assert.deepEqual(elt.$.actions.schema, intSchema);
+        });
+
+        test('set schema to object with non-empty properties ', function() {
+          var elt = fixture('propertyTests');
+          assert.deepEqual(elt.schema, intSchema);
+
+          elt.schema = { 
+            properties: {
+              elt1: {
+               type: "string"
+              },
+              elt2: {
+                type: "string"
+              }
+            }
+          };
+          assert.deepEqual(elt.schema, schema2Obj);
+
+          assert.deepEqual(elt.$.conditions.schema, schema2Obj);
+          assert.deepEqual(elt.$.actions.schema, schema2Obj);
+        });
+      });
+
+      suite('value tests', function() {
+        
+        var schema = {
+          properties: {
+            string1: {
+              type: "string"
+            },
+            string2: {
+              type: "string"
+            },
+          }
+        }
+
+        var intValue = {
+          conditions: {
+            kind: "all",
+            conditions: []
+          },
+          actions: []
+        };
+
+        var intValueStr = JSON.stringify(intValue);
+
+        var nonEmptyValue = {
+          conditions: {
+            kind: "all",
+            conditions: [
+              {
+                name: "string1",
+                operator: "equalTo",
+                compareTo: "text",
+                value: "123"
+              },
+              {
+                name: "string2",
+                operator: "equalTo",
+                compareTo: "text",
+                value: "123"
+              }
+            ]
+          },
+          actions: [
+            {
+              actionName: "updateField",
+              fieldName: "string1",
+              updateTo: "321"
+            },
+            {
+              actionName: "updateField",
+              fieldName: "string2",
+              updateTo: "321"
+            }
+          ]
+        };
+
+        var nonEmptyValueStr = JSON.stringify(nonEmptyValue);
+
+        test('set value to empty string', function() {
+          var elt = fixture('propertyTests');
+          assert.deepEqual(elt.value, intValue);
+
+          elt.value = "";
+          assert.deepEqual(elt.value, "");
+
+          assert.deepEqual(elt.$.conditions.value, intValue.conditions);
+          assert.deepEqual(elt.$.actions.value, intValue.actions);
+        });
+
+        test('set value to initial value string', function() {
+          var elt = fixture('propertyTests');
+          assert.deepEqual(elt.value, intValue);
+
+          elt.value = intValueStr;
+          assert.deepEqual(elt.value, intValue);
+
+          assert.deepEqual(elt.$.conditions.value, intValue.conditions);
+          assert.deepEqual(elt.$.actions.value, intValue.actions);
+        });
+
+        test('set value to nont-empty value string', function() {
+          var elt = fixture('propertyTests');
+          assert.deepEqual(elt.value, intValue);
+
+          elt.schema = schema;
+          debugger;
+          elt.value = nonEmptyValueStr;
+          assert.deepEqual(elt.value, nonEmptyValue);
+
+          assert.deepEqual(elt.$.conditions.value, nonEmptyValue.conditions);
+          assert.deepEqual(elt.$.actions.value, nonEmptyValue.actions);
+        });
+
+        // set value to empty object 
+
+        // set value to object with empty conditions and actions
+
+        // set value to object with non-empty conditions and properties 
 
       });
 
