@@ -285,11 +285,10 @@
           this.value = oldValue;
           this._isValueChangedInProgress = false;
         }
-        return;
       }
       // else newValue is empty string and isRuleEditValueValid should return false;
       
-      var isNewValueValid = this._isRuleEditValueValid(newValue);
+      var isNewValueValid = this._isRuleEditValueValid(this.value);
       var isOldValueValid = this._isRuleEditValueValid(oldValue);
 
       // if newValue is invalid and oldValue is invalid use initial value
@@ -306,8 +305,8 @@
         return;
       }
 
-      this.$.conditions.value = newValue.conditions;
-      this.$.actions.value = newValue.actions;
+      this.$.conditions.value = this.value.conditions;
+      this.$.actions.value = this.value.actions;
     },
 
     _isSchemaEmpty: function(obj) {

@@ -221,8 +221,6 @@
           var elt = fixture('propertyTests');
           assert.deepEqual(elt.value, intValue);
 
-          elt.schema = schema;
-          debugger;
           elt.value = nonEmptyValueStr;
           assert.deepEqual(elt.value, nonEmptyValue);
 
@@ -230,15 +228,41 @@
           assert.deepEqual(elt.$.actions.value, nonEmptyValue.actions);
         });
 
-        // set value to empty object 
+        test('set value to empty object', function() {
+          var elt = fixture('propertyTests');
+          assert.deepEqual(elt.value, intValue);
 
-        // set value to object with empty conditions and actions
+          elt.value = {};
+          assert.deepEqual(elt.value, {});
 
-        // set value to object with non-empty conditions and properties 
+          assert.deepEqual(elt.$.conditions.value, intValue.conditions);
+          assert.deepEqual(elt.$.actions.value, intValue.actions);
+        });
+        
+        test('set value to object with empty conditions and actions', function() {
+          var elt = fixture('propertyTests');
+          assert.deepEqual(elt.value, intValue);
+
+          elt.value = intValue;
+          assert.deepEqual(elt.value, intValue);
+
+          assert.deepEqual(elt.$.conditions.value, intValue.conditions);
+          assert.deepEqual(elt.$.actions.value, intValue.actions);
+        });
+
+        test('set value to object with non-empty conditions and properties', function() {
+          var elt = fixture('propertyTests');
+          assert.deepEqual(elt.value, intValue);
+
+          elt.value = nonEmptyValue;
+          assert.deepEqual(elt.value, nonEmptyValue);
+
+          assert.deepEqual(elt.$.conditions.value, nonEmptyValue.conditions);
+          assert.deepEqual(elt.$.actions.value, nonEmptyValue.actions);
+        });
 
       });
 
     </script>
-
   </body>
 </html>
