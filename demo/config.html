@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
   <title>Conditions Demo</title>
 
-  <script src="../webcomponentsjs/webcomponents-lite.js"></script>
-  <link rel="import" href="at-rule-edit.html">
-  <link rel="import" href="../layout/layout.html">
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="../at-rule-edit.html">
+  <link rel="import" href="../../at-core-style-classes/at-core-style-classes.html" />
 
-  <style>
+  <style is="custom-style" include="at-core-style-classes">
     #demoForm {
       position: relative;
       top: 0px;
@@ -29,46 +29,48 @@
       min-height: 700px;
       height: 100%
     }
+
+    .column {
+      margin: 0 8px;
+    }
+
   </style>
 
 </head>
 
-<body>
-  <div class="horizontal layout">
-    <div class="vertical layout">
-      <div class="vertical layout">
-        <h2>Conditions and Actions Demo - static schema</h2>
-        <at-rule-edit id="ruleEdit"></at-rule-edit>
-      </div>
-      <div class="vertical layout">
-        <form id="demoForm" class="ui form">
-          <h3 class="ui header">Try Changing These Values...</h3>
-          <div class="field">
-            <label>Damage</label>
-            <input type="text" id="damageField" />
-          </div>
-          <div class="field">
-            <label>Health</label>
-            <input type="text" id="healthField" />
-          </div>
-          <div class="field">
-            <label>Enemy</label>
-            <select id="enemyField"></select>
-          </div>
-          <div class="field">
-            <button type="button" id="submit">Run Conditions and Actions</button>
-          </div>
-        </form>
-      </div>
-    </div>
+<body class="layout-horizontal">
 
-    <div class="vertical layout">
-      <h3>Rule edit value echo:</h3>
-      <div class="horizontal layout">
-        <textarea class="textarea" disabled id="ruleEditValueEcho"></textarea>
-      </div>
-    </div>
+  <div class="column layout-flex-4">
+    <h2>Ruleedit demo - static config</h2>
+    <at-rule-edit id="ruleEdit"></at-rule-edit>
   </div>
+
+  <div class="column layout-flex-4">
+    <h2>Try Changing These Values...</h2>
+    <form id="demoForm" class="ui form">
+      <div class="field">
+        <label>Damage</label>
+        <input type="text" id="damageField" />
+      </div>
+      <div class="field">
+        <label>Health</label>
+        <input type="text" id="healthField" />
+      </div>
+      <div class="field">
+        <label>Enemy</label>
+        <select id="enemyField"></select>
+      </div>
+      <div class="field">
+        <button type="button" id="submit">Run Conditions and Actions</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="column layout-flex-4">
+    <h3>Rule edit value echo:</h3>
+    <textarea class="textarea" disabled id="ruleEditValueEcho"></textarea>
+  </div>
+
   <script>
     document.addEventListener('WebComponentsReady', function() {
       var enemyOptions = [{
@@ -251,6 +253,7 @@
       });
 
     });
+
   </script>
 </body>
 

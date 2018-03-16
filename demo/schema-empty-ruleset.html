@@ -5,37 +5,36 @@
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
   <title>Conditions Demo</title>
 
-  <script src="../webcomponentsjs/webcomponents-lite.js"></script>
-  <link rel="import" href="at-rule-edit.html">
-  <link rel="import" href="../layout/layout.html">
-  <link rel="import" href="../at-core-form/at-core-form.html">
-  <style>
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="../at-rule-edit.html">
+  <link rel="import" href="../../at-core-style-classes/at-core-style-classes.html" />
+  <link rel="import" href="../../at-core-form/at-core-form.html">
+
+  <style is="custom-style" include="at-core-style-classes">
     .light-padding {
       padding-left: 6px;
       padding-right: 6px;
       margin: 2px;
       border: 1px solid #bbb;
     }
+
   </style>
 
 </head>
 
 <body>
-  <div class="vertical layout">
-    <div class="horizontal layout">
-      <h2>Conditions and Actions Demo - empty ruleset</h2>
+  <h2>Conditions and Actions Demo - empty ruleset</h2>
+  <div class="layout-horizontal">
+    <div class="layout-flex-6 light-padding">
+      <at-core-form id="demoForm"></at-core-form>
     </div>
-    <div class="horizontal layout">
-      <div class="flex-6 light-padding">
-        <at-core-form id="demoForm"></at-core-form>
-      </div>
-      <div class="flex-6 light-padding">
-        <at-rule-edit id="ruleEdit" defaultactions="false" defaultconditions="false"></at-rule-edit>
-      </div>
+    <div class="layout-flex-6 light-padding">
+      <at-rule-edit id="ruleEdit" defaultactions="false" defaultconditions="false"></at-rule-edit>
     </div>
-    <div class="horizontal center-justified layout light-padding">
-      <button id="submit" type="button">Submit</button>
-    </div>
+  </div>
+
+  <div class="layout-horizontal layout-center-justified light-padding">
+    <button id="submit" type="button">Submit</button>
   </div>
 
   <script>
@@ -118,6 +117,7 @@
         engine.run(conditionsAdapter, actionsAdapter);
       });
     });
+
   </script>
 
 </body>
