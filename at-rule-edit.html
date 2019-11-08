@@ -101,7 +101,7 @@
         self._isValueChangedInProgress = true;
         self.value.conditions = self.$.conditions.value;
         self._isValueChangedInProgress = false;
-        self.fire('value-changed', { value: self.value }, { bubbles: false });  
+        self.fire('value-changed', { value: self.value }, { bubbles: false, composed: false });  
       });
 
       this.$.actions.addEventListener('value-changed', function(event) {
@@ -109,7 +109,7 @@
         self._isValueChangedInProgress = true;
         self.value.actions = self.$.actions.value;
         self._isValueChangedInProgress = false;
-        self.fire('value-changed', { value: self.value }, { bubbles: false });
+        self.fire('value-changed', { value: self.value }, { bubbles: false, composed: false });
       });
     },
 
